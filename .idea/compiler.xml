@@ -9,7 +9,7 @@
         <module name="exchange-scanner" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
+    <bytecodeTargetLevel target="1.8">
       <module name="exchange-scanner" target="1.8" />
     </bytecodeTargetLevel>
   </component>
