@@ -1,17 +1,15 @@
 package org.cryptoscanner.exchangescanner.adapter;
 
-import org.knowm.xchange.bittrex.service.BittrexChartDataPeriodType;
-
 import java.time.Duration;
 
 public interface PeriodAdapter {
     public enum Period {
         _1m,
         _5m,
-        _15m,
+//        _15m,
         _30m,
         _1h,
-        _4h,
+//        _4h,
         _1D
     }
 

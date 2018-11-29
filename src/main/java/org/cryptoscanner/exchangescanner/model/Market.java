@@ -1,5 +1,7 @@
 package org.cryptoscanner.exchangescanner.model;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.cryptoscanner.exchangescanner.adapter.EnumExchange;
 import org.cryptoscanner.exchangescanner.adapter.PeriodAdapter;
 import org.knowm.xchange.currency.CurrencyPair;
@@ -9,80 +11,40 @@ import java.time.*;
 import java.util.LinkedList;
 import java.util.List;
 
+@Getter
+@Setter
 public class Market {
     private TimeSeries candles;
+    private TimeSeries candles1m;
     private BaseBar actualCandle;
+    private BaseBar actualCandle1m;
     private double actualPrice;
-    List<Indicator> indicators;
-    EnumExchange echange;
-    CurrencyPair currencyPair;
-    PeriodAdapter.Period period;
+    private List<Indicator> indicators;
+    private EnumExchange exchange;
+    private CurrencyPair currencyPair;
+    private PeriodAdapter.Period period;
 
     //temp solution for bittrex data hole
     public LocalDateTime firstHistoryDataRequest;
     public boolean secondGetHistory = false;
 
-    public Market(EnumExchange echange, CurrencyPair currencyPair) {
-        this.echange = echange;
+    public Market(EnumExchange exchange, CurrencyPair currencyPair) {
+        this.exchange = exchange;
         this.currencyPair = currencyPair;
-        this.period = PeriodAdapter.Period._5m;
-        this.indicators =  new LinkedList<>();
+        this.period = PeriodAdapter.Period._30m;
+        this.indicators = new LinkedList<>();
     }
 
-    public TimeSeries getCandles() {
-        return candles;
-    }
-
-    public void setCandles(TimeSeries candles) {
-        this.candles = candles;
-    }
-
-    public Bar getActualCandle() {
-        return actualCandle;
-    }
-
-    public void setActualCandle(BaseBar actualCandle) {
-        this.actualCandle = actualCandle;
-    }
-
-    public EnumExchange getEchange() {
-        return echange;
-    }
-
-    public void setEchange(EnumExchange echange) {
-        this.echange = echange;
-    }
-
-    public CurrencyPair getCurrencyPair() {
-        return currencyPair;
-    }
-
-    public void setCurrencyPair(CurrencyPair currencyPair) {
-        this.currencyPair = currencyPair;
-    }
-
-    public double getActualPrice() {
-        return actualPrice;
-    }
-
-    public void setActualPrice(double actualPrice) {
-        this.actualPrice = actualPrice;
-    }
-
-    public PeriodAdapter.Period getPeriod() {
-        return period;
-    }
-
-    public void setPeriod(PeriodAdapter.Period period) {
-        this.period = period;
-    }
-
-    public void addIndicator(Indicator indicator){
+    public void addIndicator(Indicator indicator) {
         this.indicators.add(indicator);
     }
 
-    public List<Indicator> getIndicators() {
-        return indicators;
+    public void addCandle(BaseBar baseBar){
+        candles.addBar(baseBar);
+    }
+
+    public void addCandle1m(BaseBar baseBar){
+        candles1m.addBar(baseBar);
     }
 
     //temp solution for bittrex data hole
@@ -117,9 +79,9 @@ public class Market {
 //                System.out.println(this.candles.getBar(this.candles.getEndIndex()-synchornizedIndex-i));
 //                System.out.println(candles.getBar(candles.getEndIndex()-i));
 //            }
-            TimeSeries temp = this.candles.getSubSeries(0,synchornizedIndex);
+            TimeSeries temp = this.candles.getSubSeries(0, synchornizedIndex);
             this.candles = candles;
-            for(int i=0;i<temp.getEndIndex();i++){
+            for (int i = 0; i < temp.getEndIndex(); i++) {
                 this.candles.addBar(temp.getBar(i));
             }
         }
@@ -130,13 +92,29 @@ public class Market {
     public void buildActualCandle(double price, double volume) {
         if (actualCandle == null) {
             actualCandle = new BaseBar(PeriodAdapter.getDuration(period),
-                    ZonedDateTime.of(LocalDateTime.now().withNano(0).withSecond(0), ZoneId.systemDefault()));
+                    ZonedDateTime.of(LocalDateTime.now().withNano(0).withSecond(0).plusMinutes(PeriodAdapter.getDuration(period).toMinutes()), ZoneId.systemDefault()));
+            candles.addBar(actualCandle);
         } else if (actualCandle.getEndTime().withSecond(0).withNano(0).isBefore(
                 ZonedDateTime.now(actualCandle.getEndTime().getZone()).withSecond(0).withNano(0)) && actualCandle != null) {
-            candles.addBar(actualCandle);
             actualCandle = new BaseBar(PeriodAdapter.getDuration(period),
                     ZonedDateTime.of(LocalDateTime.now().withNano(0).withSecond(0), ZoneId.systemDefault()));
+            candles.addBar(actualCandle);
+//            ZonedDateTime.now().get()
         }
         actualCandle.addTrade(Decimal.valueOf(volume), Decimal.valueOf(price));
+    }
+
+    public void build1mActualCandle(double price, double volume) {
+        if (actualCandle1m == null) {
+            actualCandle1m = new BaseBar(PeriodAdapter.getDuration(PeriodAdapter.Period._1m),
+                    ZonedDateTime.of(LocalDateTime.now().withNano(0).withSecond(0), ZoneId.systemDefault()));
+            candles1m.addBar(actualCandle1m);
+        } else if (actualCandle1m.getEndTime().withSecond(0).withNano(0).isBefore(
+                ZonedDateTime.now(actualCandle1m.getEndTime().getZone()).withSecond(0).withNano(0)) && actualCandle1m != null) {
+            actualCandle1m = new BaseBar(PeriodAdapter.getDuration(PeriodAdapter.Period._1m),
+                    ZonedDateTime.of(LocalDateTime.now().withNano(0).withSecond(0), ZoneId.systemDefault()));
+            candles1m.addBar(actualCandle1m);
+        }
+        actualCandle1m.addTrade(Decimal.valueOf(volume), Decimal.valueOf(price));
     }
 }

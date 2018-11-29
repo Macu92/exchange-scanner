@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Component
 public class MarketService {
 
-    List<Market> markets;
+    private List<Market> markets;
 
     public MarketService(List<Market> markets) {
         this.markets = markets;
@@ -30,8 +30,6 @@ public class MarketService {
 
     public Market addMarket(EnumExchange enumExchange, CurrencyPair currencyPair){
         Market market = new Market(enumExchange,currencyPair);
-        System.out.println("---ADD MARKET---");
-        System.out.println(Integer.toHexString(System.identityHashCode(market)));
         markets.add(market);
         return market;
     }
@@ -45,11 +43,11 @@ public class MarketService {
     }
 
     public List<Market> getMarketsByExchange(EnumExchange enumExchange){
-        return this.markets.stream().filter(market -> market.getEchange().equals(enumExchange)).collect(Collectors.toList());
+        return this.markets.stream().filter(market -> market.getExchange().equals(enumExchange)).collect(Collectors.toList());
     }
 
     public Market getMarketByExchangeAndCurrencyPair(EnumExchange enumExchange, CurrencyPair currencyPair){
-        return this.markets.stream().filter(market -> market.getEchange().equals(enumExchange))
+        return this.markets.stream().filter(market -> market.getExchange().equals(enumExchange))
                 .filter(market -> market.getCurrencyPair().equals(currencyPair))
                 .collect(Collectors.toList()).get(0);
     }
